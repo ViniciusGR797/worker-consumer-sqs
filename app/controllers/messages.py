@@ -29,15 +29,23 @@ def message_handler(event):
             put_metric("InvalidMessages", 1)
             continue
 
-        if dynamodb_service.exists_message(message_id):
+        is_exists, err = dynamodb_service.exists_message(message_id)
+        if err:
+            log_message(message_id, "message_check_failed", "error", {
+                "error": err})
+            continue
+        if is_exists:
             log_message(message_id, "message_skipped", "duplicate")
             put_metric("DuplicateMessages", 1)
             continue
 
-        if dynamodb_service.save_message(message_id, data):
-            if not sqs_service.queue_url:
-                sqs_service.queue_url = sqs_service.get_queue_url(
-                    queue_name, message_id)
-            sqs_service.delete_message(receipt_handle, message_id)
-        else:
-            log_message(message_id, "message_save_failed", "error")
+        _, err = dynamodb_service.save_message(message_id, data)
+        if err:
+            log_message(message_id, "message_save_failed", "error", {
+                "error": err})
+            continue
+
+        if not sqs_service.queue_url:
+            sqs_service.queue_url = sqs_service.get_queue_url(
+                queue_name, message_id)
+        sqs_service.delete_message(receipt_handle, message_id)
