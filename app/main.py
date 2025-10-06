@@ -1,15 +1,5 @@
-import os
-from mangum import Mangum
-from utils.swagger import create_app
-from routes import users, messages
+from controllers.messages import message_handler
 
-app = create_app()
+def handler(event, context):
+    return message_handler(event)
 
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(messages.router, prefix="/messages", tags=["Messages"])
-
-handler = Mangum(app)
-
-if os.getenv("ENV") == "LOCAL":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)

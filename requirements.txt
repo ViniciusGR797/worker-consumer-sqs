@@ -1,8 +1,3 @@
-fastapi
-mangum
-uvicorn
 dotenv
-email-validator
-python-jose[cryptography]
 boto3
-autopep8
+botocore

@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch, MagicMock
 
 with patch("utils.metrics.boto3.client") as mock_client:

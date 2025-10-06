@@ -1,7 +1,6 @@
-import pytest
 from unittest.mock import patch
 from utils.logging import log_message
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 import uuid
 
