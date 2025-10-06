@@ -35,7 +35,6 @@ class DynamoDBService:
     def save_message(self, message_id: str, message: dict) -> bool:
         try:
             payload = convert_floats_to_decimal(message.get("payload", {}))
-            
             self.table.put_item(
                 Item={
                     "message_id": message_id,

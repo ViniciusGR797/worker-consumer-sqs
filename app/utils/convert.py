@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+
 def convert_floats_to_decimal(obj):
     if isinstance(obj, dict):
         return {k: convert_floats_to_decimal(v) for k, v in obj.items()}
