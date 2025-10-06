@@ -21,7 +21,7 @@ def message_handler(event):
 
         try:
             data = json.loads(message_body)
-            message_id = message_body.get("message_id")
+            message_id = data.get("message_id")
         except Exception:
             log_message(
                 message_id, "message_parse", "error", {
