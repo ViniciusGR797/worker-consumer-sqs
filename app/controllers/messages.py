@@ -21,6 +21,7 @@ def message_handler(event):
 
         try:
             data = json.loads(message_body)
+            message_id = message_body.get("message_id")
         except Exception:
             log_message(
                 message_id, "message_parse", "error", {
@@ -35,7 +36,7 @@ def message_handler(event):
 
         if dynamodb_service.save_message(message_id, data):
             if not sqs_service.queue_url:
-                sqs_service.queue_url = sqs_service.get_queue_url(queue_name)
+                sqs_service.queue_url = sqs_service.get_queue_url(queue_name, message_id)
             sqs_service.delete_message(receipt_handle, message_id)
         else:
             log_message(message_id, "message_save_failed", "error")

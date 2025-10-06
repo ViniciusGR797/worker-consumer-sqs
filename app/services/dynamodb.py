@@ -16,47 +16,38 @@ class DynamoDBService:
             response = self.table.get_item(Key={"message_id": message_id})
             exists = "Item" in response
             log_message(
-                message_id, "dynamodb_check", "success", {
-                    "exists": exists})
+                message_id,
+                "dynamodb_check",
+                "success",
+                {"exists": exists}
+            )
             return exists
-        except ClientError as e:
-            log_message(
-                message_id, "dynamodb_check", "error", {
-                    "error": str(e)})
-            put_metric("DynamoDBCheckError", 1)
-            return False
         except Exception as e:
             log_message(
-                message_id, "dynamodb_check", "error", {
-                    "error": str(e)})
+                message_id,
+                "dynamodb_check",
+                "error",
+                {"error": str(e)}
+            )
             put_metric("DynamoDBCheckError", 1)
             return False
 
-    def save_message(self, message_id: str, body: dict) -> bool:
+    def save_message(self, message_id: str, message: dict) -> bool:
         try:
             self.table.put_item(
                 Item={
                     "message_id": message_id,
-                    "body": body
+                    "timestamp": message.get("timestamp"),
+                    "source": message.get("source"),
+                    "type": message.get("type"),
+                    "payload": message.get("payload"),
                 },
                 ConditionExpression="attribute_not_exists(message_id)"
             )
             log_message(message_id, "dynamodb_save", "success")
             put_metric("MessagesSaved", 1)
             return True
-        except ClientError as e:
-            code = e.response["Error"]["Code"]
-            if code == "ConditionalCheckFailedException":
-                log_message(message_id, "dynamodb_save", "duplicate")
-            else:
-                log_message(
-                    message_id, "dynamodb_save", "error", {
-                        "error": str(e)})
-                put_metric("DynamoDBSaveError", 1)
-            return False
         except Exception as e:
-            log_message(
-                message_id, "dynamodb_save", "error", {
-                    "error": str(e)})
+            log_message(message_id, "dynamodb_save", "error", {"error": str(e)})
             put_metric("DynamoDBSaveError", 1)
             return False
