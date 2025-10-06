@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <img src="docs/architecture_consumer.svg" alt="Consumer Architecture" width="600"/>
+  <img src="docs/architecture.svg" alt="Consumer Architecture" width="600"/>
 </div>
 
 [architecture.drawio](docs/architecture.drawio)
