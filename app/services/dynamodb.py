@@ -1,4 +1,5 @@
 import boto3
+from utils.convert import convert_floats_to_decimal
 from utils.config import Config
 from utils.logging import log_message
 from utils.metrics import put_metric
@@ -33,13 +34,15 @@ class DynamoDBService:
 
     def save_message(self, message_id: str, message: dict) -> bool:
         try:
+            payload = convert_floats_to_decimal(message.get("payload", {}))
+            
             self.table.put_item(
                 Item={
                     "message_id": message_id,
                     "timestamp": message.get("timestamp"),
                     "source": message.get("source"),
                     "type": message.get("type"),
-                    "payload": message.get("payload"),
+                    "payload": payload,
                 },
                 ConditionExpression="attribute_not_exists(message_id)"
             )
