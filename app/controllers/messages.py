@@ -36,7 +36,8 @@ def message_handler(event):
 
         if dynamodb_service.save_message(message_id, data):
             if not sqs_service.queue_url:
-                sqs_service.queue_url = sqs_service.get_queue_url(queue_name, message_id)
+                sqs_service.queue_url = sqs_service.get_queue_url(
+                    queue_name, message_id)
             sqs_service.delete_message(receipt_handle, message_id)
         else:
             log_message(message_id, "message_save_failed", "error")

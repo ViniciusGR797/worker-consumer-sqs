@@ -1,5 +1,4 @@
 import boto3
-from botocore.exceptions import ClientError
 from utils.config import Config
 from utils.logging import log_message
 from utils.metrics import put_metric
@@ -48,6 +47,7 @@ class DynamoDBService:
             put_metric("MessagesSaved", 1)
             return True
         except Exception as e:
-            log_message(message_id, "dynamodb_save", "error", {"error": str(e)})
+            log_message(message_id, "dynamodb_save", "error", {
+                "error": str(e)})
             put_metric("DynamoDBSaveError", 1)
             return False
