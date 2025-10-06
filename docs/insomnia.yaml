@@ -1,0 +1,244 @@
+type: collection.insomnia.rest/5.0
+name: Challenge
+meta:
+  id: wrk_87ca87a97ff9418ba6276bf60ccfe3e3
+  created: 1759719031372
+  modified: 1759719031372
+  description: ""
+collection:
+  - url: "{{ _.url }}/users/login"
+    name: Login
+    meta:
+      id: req_93f5b467149d47cda83889d1620c8358
+      created: 1759549719627
+      modified: 1759696538032
+      isPrivate: false
+      description: ""
+      sortKey: -1759595340649
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "{{ _.email }}",
+        	"pwd": "{{ _.pwd }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.6.1
+    scripts:
+      afterResponse: |
+        insomnia.test('Login returned 200', () => {
+          insomnia.expect(insomnia.response.status).to.eql(200);
+        });
+
+        try {
+          const body = insomnia.response.json();
+          const token = body.access_token || body.token; 
+          if (token) {
+            insomnia.environment.set("token", token);
+          } else {
+            insomnia.environment.unset("token");
+          }
+        } catch (err) {
+          console.warn('Não foi possível extrair token:', err);
+        }
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.url }}/messages/send"
+    name: Send Message
+    meta:
+      id: req_e1ff1f47a96d4ae98b51a2f9859ab132
+      created: 1759595340599
+      modified: 1759631294458
+      isPrivate: false
+      description: ""
+      sortKey: -1759595340599
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"transaction_id": "txn-908765",
+        	"payer_id": "user-12345",
+        	"receiver_id": "user-67890",
+        	"amount": 250.75,
+        	"currency": "BRL",
+        	"description": "Doação para projeto X"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.6.1
+    authentication:
+      type: bearer
+      token: "{{ _.token }}"
+      prefix: Bearer
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.url }}/docs"
+    name: Docs
+    meta:
+      id: req_90741061e4a3412fbd6428d426831638
+      created: 1759611413144
+      modified: 1759611430756
+      isPrivate: false
+      description: ""
+      sortKey: -1759595340699
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.1
+    authentication:
+      type: none
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.url }}/messages/status/desafio-sqs.fifo"
+    name: Get Status
+    meta:
+      id: req_8173b6bed3c74d60a83ad5c98b123082
+      created: 1759620292320
+      modified: 1759632137979
+      isPrivate: false
+      description: ""
+      sortKey: -1743263560525.875
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.1
+    authentication:
+      type: bearer
+      token: "{{ _.token }}"
+      prefix: Bearer
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.url }}/messages/send/dlq"
+    name: Send Message DLQ
+    meta:
+      id: req_bf60d1ded7c040b7ac4b1aa23ecc1c43
+      created: 1759628383357
+      modified: 1759628390720
+      isPrivate: false
+      description: ""
+      sortKey: -1746529916540.5
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"transaction_id": "txn-908765",
+        	"payer_id": "user-12345",
+        	"receiver_id": "user-67890",
+        	"amount": 250.75,
+        	"currency": "BRL",
+        	"description": "Doação para projeto X"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: User-Agent
+        value: insomnia/11.6.1
+    authentication:
+      type: bearer
+      token: "{{ _.token }}"
+      prefix: Bearer
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.url }}/messages/reprocess/desafio-sqs.fifo"
+    name: Reprocess DLQ
+    meta:
+      id: req_633350066d4e4b89b496012afbd5ac36
+      created: 1759628413949
+      modified: 1759628447137
+      isPrivate: false
+      description: ""
+      sortKey: -1739997204511.25
+    method: POST
+    headers:
+      - name: User-Agent
+        value: insomnia/11.6.1
+    authentication:
+      type: bearer
+      token: "{{ _.token }}"
+      prefix: Bearer
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_fbe58430c97b442f8cdf772b1573d81f
+    created: 1759549719584
+    modified: 1759712602949
+environments:
+  name: Base Environment
+  meta:
+    id: env_28210897e9e647388c1cf33f9d53a8b9
+    created: 1759549719584
+    modified: 1759712602953
+    isPrivate: false
+  subEnvironments:
+    - name: Local
+      meta:
+        id: env_f9c6c552e6614dfd9d20c8eb2b9944f4
+        created: 1759596220073
+        modified: 1759719063832
+        isPrivate: false
+        sortKey: 1759596220074
+      data:
+        url: http://localhost:8080
+        email: user@example.com
+        pwd: strongpassword123
+        token: ""
+      color: "#8069dd"
+    - name: Prd
+      meta:
+        id: env_01af031d70a2425e97b7ae9b26b55836
+        created: 1759596248202
+        modified: 1759719101804
+        isPrivate: false
+        sortKey: 1759596248202
+      data:
+        url: https://<api-id>.execute-api.<region>.amazonaws.com
+        email: user@example.com
+        pwd: strongpassword123
+        token: ""
+      color: "#fa0000"
