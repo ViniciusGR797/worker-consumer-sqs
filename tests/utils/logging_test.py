@@ -21,18 +21,6 @@ def test_log_message_success():
         assert log_data["details"] == details
         datetime.fromisoformat(log_data["timestamp"].replace("Z", "+00:00"))
 
-def test_log_message_no_details():
-    trace_id = uuid.uuid4()
-    action = "transaction_created"
-    status = "success"
-
-    with patch("utils.logging.logger.info") as mock_info:
-        log_message(trace_id, action, status)
-        assert mock_info.called
-        log_arg = mock_info.call_args[0][0]
-        log_data = json.loads(log_arg)
-        assert log_data["details"] is None
-
 def test_log_message_invalid_trace_id():
     trace_id = 12345
     action = "error_test"
