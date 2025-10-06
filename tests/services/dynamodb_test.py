@@ -7,18 +7,19 @@ VALID_MESSAGE = {
     "timestamp": "2025-10-04T12:00:00Z",
     "source": "transactions_api",
     "type": "transaction_created",
+    "dlq_retry": 0,
     "payload": {
         "transaction_id": "txn-908765",
         "payer_id": "user-12345",
         "receiver_id": "user-67890",
         "amount": 250.75,
         "currency": "BRL",
-        "description": "Donation to project X"
-    }
+        "description": "Donation to project X",
+    },
 }
 
-class TestDynamoDBService(unittest.TestCase):
 
+class TestDynamoDBService(unittest.TestCase):
     @patch("services.dynamodb.put_metric")
     @patch("services.dynamodb.log_message")
     @patch("services.dynamodb.boto3.resource")
@@ -28,8 +29,10 @@ class TestDynamoDBService(unittest.TestCase):
         mock_boto.return_value.Table.return_value = mock_table
 
         service = DynamoDBService()
-        result = service.exists_message("123")
+        result, err = service.exists_message("123")
+
         self.assertTrue(result)
+        self.assertIsNone(err)
         mock_log.assert_called_with("123", "dynamodb_check", "success", {"exists": True})
         mock_metric.assert_not_called()
 
@@ -42,8 +45,10 @@ class TestDynamoDBService(unittest.TestCase):
         mock_boto.return_value.Table.return_value = mock_table
 
         service = DynamoDBService()
-        result = service.exists_message("123")
+        result, err = service.exists_message("123")
+
         self.assertFalse(result)
+        self.assertIsNone(err)
         mock_log.assert_called_with("123", "dynamodb_check", "success", {"exists": False})
         mock_metric.assert_not_called()
 
@@ -56,8 +61,10 @@ class TestDynamoDBService(unittest.TestCase):
         mock_boto.return_value.Table.return_value = mock_table
 
         service = DynamoDBService()
-        result = service.exists_message("123")
+        result, err = service.exists_message("123")
+
         self.assertFalse(result)
+        self.assertEqual(err, "DynamoDB error")
         mock_log.assert_called_with("123", "dynamodb_check", "error", {"error": "fail"})
         mock_metric.assert_called_with("DynamoDBCheckError", 1)
 
@@ -71,8 +78,10 @@ class TestDynamoDBService(unittest.TestCase):
         mock_convert.return_value = VALID_MESSAGE["payload"]
 
         service = DynamoDBService()
-        result = service.save_message("123", VALID_MESSAGE)
+        result, err = service.save_message("123", VALID_MESSAGE)
+
         self.assertTrue(result)
+        self.assertIsNone(err)
         mock_table.put_item.assert_called_once()
         mock_log.assert_called_with("123", "dynamodb_save", "success")
         mock_metric.assert_called_with("MessagesSaved", 1)
@@ -88,8 +97,10 @@ class TestDynamoDBService(unittest.TestCase):
         mock_convert.return_value = VALID_MESSAGE["payload"]
 
         service = DynamoDBService()
-        result = service.save_message("123", VALID_MESSAGE)
+        result, err = service.save_message("123", VALID_MESSAGE)
+
         self.assertFalse(result)
+        self.assertEqual(err, "DynamoDB error")
         mock_log.assert_called_with("123", "dynamodb_save", "error", {"error": "fail"})
         mock_metric.assert_called_with("DynamoDBSaveError", 1)
 
@@ -99,16 +110,19 @@ class TestDynamoDBService(unittest.TestCase):
     @patch("services.dynamodb.boto3.resource")
     def test_save_message_failure_conditional_check(self, mock_boto, mock_convert, mock_log, mock_metric):
         from botocore.exceptions import ClientError
+
         mock_table = MagicMock()
         mock_table.put_item.side_effect = ClientError(
-            {"Error": {"Code": "ConditionalCheckFailedException"}}, "PutItem"
+            {"Error": {"Code": "ConditionalCheckFailedException", "Message": "Item exists"}},
+            "PutItem",
         )
         mock_boto.return_value.Table.return_value = mock_table
         mock_convert.return_value = VALID_MESSAGE["payload"]
 
         service = DynamoDBService()
-        result = service.save_message("123", VALID_MESSAGE)
-        self.assertFalse(result)
+        result, err = service.save_message("123", VALID_MESSAGE)
 
-        mock_log.assert_called_with("123", "dynamodb_save", "error", {"error": mock_table.put_item.side_effect.response["Error"]["Message"] if "Message" in mock_table.put_item.side_effect.response["Error"] else str(mock_table.put_item.side_effect)})
+        self.assertFalse(result)
+        self.assertEqual(err, "DynamoDB error")
+        mock_log.assert_called_with("123", "dynamodb_save", "error", {"error": "An error occurred (ConditionalCheckFailedException) when calling the PutItem operation: Item exists"})
         mock_metric.assert_called_with("DynamoDBSaveError", 1)
