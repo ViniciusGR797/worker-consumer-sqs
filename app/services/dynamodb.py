@@ -1,9 +1,9 @@
-import os
 import boto3
 from botocore.exceptions import ClientError
 from utils.config import Config
 from utils.logging import log_message
 from utils.metrics import put_metric
+
 
 class DynamoDBService:
     def __init__(self):
@@ -15,14 +15,20 @@ class DynamoDBService:
         try:
             response = self.table.get_item(Key={"message_id": message_id})
             exists = "Item" in response
-            log_message(message_id, "dynamodb_check", "success", {"exists": exists})
+            log_message(
+                message_id, "dynamodb_check", "success", {
+                    "exists": exists})
             return exists
         except ClientError as e:
-            log_message(message_id, "dynamodb_check", "error", {"error": str(e)})
+            log_message(
+                message_id, "dynamodb_check", "error", {
+                    "error": str(e)})
             put_metric("DynamoDBCheckError", 1)
             return False
         except Exception as e:
-            log_message(message_id, "dynamodb_check", "error", {"error": str(e)})
+            log_message(
+                message_id, "dynamodb_check", "error", {
+                    "error": str(e)})
             put_metric("DynamoDBCheckError", 1)
             return False
 
@@ -43,10 +49,14 @@ class DynamoDBService:
             if code == "ConditionalCheckFailedException":
                 log_message(message_id, "dynamodb_save", "duplicate")
             else:
-                log_message(message_id, "dynamodb_save", "error", {"error": str(e)})
+                log_message(
+                    message_id, "dynamodb_save", "error", {
+                        "error": str(e)})
                 put_metric("DynamoDBSaveError", 1)
             return False
         except Exception as e:
-            log_message(message_id, "dynamodb_save", "error", {"error": str(e)})
+            log_message(
+                message_id, "dynamodb_save", "error", {
+                    "error": str(e)})
             put_metric("DynamoDBSaveError", 1)
             return False

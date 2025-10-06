@@ -1,3 +1,5 @@
 dotenv
 boto3
 botocore
+autopep8
+flake8

@@ -7,6 +7,7 @@ from utils.metrics import put_metric
 dynamodb_service = DynamoDBService()
 sqs_service = SQSService()
 
+
 def message_handler(event):
     for record in event.get("Records", []):
         message_id = record["messageId"]
@@ -14,12 +15,16 @@ def message_handler(event):
         message_body = record["body"]
         queue_name = record["eventSourceARN"].split(":")[-1]
 
-        log_message(message_id, "message_received", "info", {"queue_name": queue_name})
+        log_message(
+            message_id, "message_received", "info", {
+                "queue_name": queue_name})
 
         try:
             data = json.loads(message_body)
         except Exception:
-            log_message(message_id, "message_parse", "error", {"body": message_body})
+            log_message(
+                message_id, "message_parse", "error", {
+                    "body": message_body})
             put_metric("InvalidMessages", 1)
             continue
 
